@@ -12,7 +12,6 @@ public class Project {
     private int clientId;
     private String domain;
     private double cost;
-    private int teamSize;
     private LocalDate startDate;
     private LocalDate deadline;
     private String priority;
@@ -23,7 +22,7 @@ public class Project {
 
     public Project(int id, String name, String requirements,
                    int managerId, int teamLeadId, int clientId,
-                   String domain, double cost, int teamSize,
+                   String domain, double cost,
                    LocalDate startDate, LocalDate deadline,
                    String priority, String status) {
 
@@ -35,7 +34,6 @@ public class Project {
         this.clientId = clientId;
         this.domain = domain;
         this.cost = cost;
-        this.teamSize = teamSize;
         this.startDate = startDate;
         this.deadline = deadline;
         this.priority = priority;
@@ -106,14 +104,6 @@ public class Project {
         this.cost = cost;
     }
 
-    public int getTeamSize() {
-        return teamSize;
-    }
-
-    public void setTeamSize(int teamSize) {
-        this.teamSize = teamSize;
-    }
-
     public LocalDate getStartDate() {
         return startDate;
     }
@@ -153,7 +143,6 @@ public class Project {
                 ", name='" + name + '\'' +
                 ", domain='" + domain + '\'' +
                 ", cost=" + cost +
-                ", teamSize=" + teamSize +
                 ", priority='" + priority + '\'' +
                 ", status='" + status + '\'' +
                 '}';

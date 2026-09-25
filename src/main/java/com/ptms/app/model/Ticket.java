@@ -1,35 +1,37 @@
 package com.ptms.app.model;
 
+import java.sql.Timestamp;
 import java.time.LocalDate;
 
-public class Task {
+public class Ticket {
 
     private int id;
     private int projectId;
-    private int assignedTo;
     private String title;
     private String description;
     private String priority;
     private LocalDate deadline;
+    private int assignedTo;
     private String status;
-    private int progress;
+    private Timestamp createdAt;
 
-    public Task() {
+    public Ticket() {
     }
 
-    public Task(int id, int projectId, int assignedTo,
-                String title, String description, String priority,
-                LocalDate deadline, String status, int progress) {
+    public Ticket(int id, int projectId, String title,
+                  String description, String priority,
+                  LocalDate deadline, int assignedTo,
+                  String status, Timestamp createdAt) {
 
         this.id = id;
         this.projectId = projectId;
-        this.assignedTo = assignedTo;
         this.title = title;
         this.description = description;
         this.priority = priority;
         this.deadline = deadline;
+        this.assignedTo = assignedTo;
         this.status = status;
-        this.progress = progress;
+        this.createdAt = createdAt;
     }
 
     public int getId() {
@@ -46,14 +48,6 @@ public class Task {
 
     public void setProjectId(int projectId) {
         this.projectId = projectId;
-    }
-
-    public int getAssignedTo() {
-        return assignedTo;
-    }
-
-    public void setAssignedTo(int assignedTo) {
-        this.assignedTo = assignedTo;
     }
 
     public String getTitle() {
@@ -88,6 +82,14 @@ public class Task {
         this.deadline = deadline;
     }
 
+    public int getAssignedTo() {
+        return assignedTo;
+    }
+
+    public void setAssignedTo(int assignedTo) {
+        this.assignedTo = assignedTo;
+    }
+
     public String getStatus() {
         return status;
     }
@@ -96,24 +98,23 @@ public class Task {
         this.status = status;
     }
 
-    public int getProgress() {
-        return progress;
+    public Timestamp getCreatedAt() {
+        return createdAt;
     }
 
-    public void setProgress(int progress) {
-        this.progress = progress;
+    public void setCreatedAt(Timestamp createdAt) {
+        this.createdAt = createdAt;
     }
 
     @Override
     public String toString() {
-        return "Task{" +
+        return "Ticket{" +
                 "id=" + id +
                 ", projectId=" + projectId +
-                ", assignedTo=" + assignedTo +
                 ", title='" + title + '\'' +
                 ", priority='" + priority + '\'' +
+                ", assignedTo=" + assignedTo +
                 ", status='" + status + '\'' +
-                ", progress=" + progress +
                 '}';
     }
 }

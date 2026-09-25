@@ -1,24 +1,39 @@
 
 package com.ptms.app.model;
 
+import java.time.LocalDate;
+
 public class User {
 
     private int id;
-    private String name;
+    private String firstName;
+    private String lastName;
+    private String username;
     private String email;
-    private String passwordHash;
-    private int roleId;
+    private String password;
+    private String roleName;
+    private LocalDate dateOfBirth;
+    private String mobileNumber;
+    private String gender;
 
     public User() {
     }
 
-    public User(int id, String name, String email,
-                String passwordHash, int roleId) {
+    public User(int id, String firstName, String lastName,
+                String username, String email, String password,
+                String roleName, LocalDate dateOfBirth,
+                String mobileNumber, String gender) {
+
         this.id = id;
-        this.name = name;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.username = username;
         this.email = email;
-        this.passwordHash = passwordHash;
-        this.roleId = roleId;
+        this.password = password;
+        this.roleName = roleName;
+        this.dateOfBirth = dateOfBirth;
+        this.mobileNumber = mobileNumber;
+        this.gender = gender;
     }
 
     public int getId() {
@@ -29,12 +44,28 @@ public class User {
         this.id = id;
     }
 
-    public String getName() {
-        return name;
+    public String getFirstName() {
+        return firstName;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     public String getEmail() {
@@ -45,29 +76,55 @@ public class User {
         this.email = email;
     }
 
-    public String getPasswordHash() {
-        return passwordHash;
+    public String getPassword() {
+        return password;
     }
 
-    public void setPasswordHash(String passwordHash) {
-        this.passwordHash = passwordHash;
+    public void setPassword(String password) {
+        this.password = password;
     }
 
-    public int getRoleId() {
-        return roleId;
+    public String getRoleName() {
+        return roleName;
     }
 
-    public void setRoleId(int roleId) {
-        this.roleId = roleId;
+    public void setRoleName(String roleName) {
+        this.roleName = roleName;
+    }
+
+    public LocalDate getDateOfBirth() {
+        return dateOfBirth;
+    }
+
+    public void setDateOfBirth(LocalDate dateOfBirth) {
+        this.dateOfBirth = dateOfBirth;
+    }
+
+    public String getMobileNumber() {
+        return mobileNumber;
+    }
+
+    public void setMobileNumber(String mobileNumber) {
+        this.mobileNumber = mobileNumber;
+    }
+
+    public String getGender() {
+        return gender;
+    }
+
+    public void setGender(String gender) {
+        this.gender = gender;
     }
 
     @Override
     public String toString() {
         return "User{" +
                 "id=" + id +
-                ", name='" + name + '\'' +
+                ", firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", username='" + username + '\'' +
                 ", email='" + email + '\'' +
-                ", roleId=" + roleId +
+                ", roleName='" + roleName + '\'' +
                 '}';
     }
 }

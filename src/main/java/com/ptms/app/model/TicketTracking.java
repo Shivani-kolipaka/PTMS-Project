@@ -2,30 +2,30 @@ package com.ptms.app.model;
 
 import java.sql.Timestamp;
 
-public class TaskUpdate {
+public class TicketTracking {
 
     private int id;
-    private int taskId;
-    private int updatedBy;
+    private int ticketId;
     private String status;
     private int progress;
     private String comment;
-    private Timestamp createdAt;
+    private int updatedBy;
+    private Timestamp updatedAt;
 
-    public TaskUpdate() {
+    public TicketTracking() {
     }
 
-    public TaskUpdate(int id, int taskId, int updatedBy,
-                      String status, int progress,
-                      String comment, Timestamp createdAt) {
+    public TicketTracking(int id, int ticketId, String status,
+                          int progress, String comment,
+                          int updatedBy, Timestamp updatedAt) {
 
         this.id = id;
-        this.taskId = taskId;
-        this.updatedBy = updatedBy;
+        this.ticketId = ticketId;
         this.status = status;
         this.progress = progress;
         this.comment = comment;
-        this.createdAt = createdAt;
+        this.updatedBy = updatedBy;
+        this.updatedAt = updatedAt;
     }
 
     public int getId() {
@@ -36,20 +36,12 @@ public class TaskUpdate {
         this.id = id;
     }
 
-    public int getTaskId() {
-        return taskId;
+    public int getTicketId() {
+        return ticketId;
     }
 
-    public void setTaskId(int taskId) {
-        this.taskId = taskId;
-    }
-
-    public int getUpdatedBy() {
-        return updatedBy;
-    }
-
-    public void setUpdatedBy(int updatedBy) {
-        this.updatedBy = updatedBy;
+    public void setTicketId(int ticketId) {
+        this.ticketId = ticketId;
     }
 
     public String getStatus() {
@@ -76,24 +68,32 @@ public class TaskUpdate {
         this.comment = comment;
     }
 
-    public Timestamp getCreatedAt() {
-        return createdAt;
+    public int getUpdatedBy() {
+        return updatedBy;
     }
 
-    public void setCreatedAt(Timestamp createdAt) {
-        this.createdAt = createdAt;
+    public void setUpdatedBy(int updatedBy) {
+        this.updatedBy = updatedBy;
+    }
+
+    public Timestamp getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(Timestamp updatedAt) {
+        this.updatedAt = updatedAt;
     }
 
     @Override
     public String toString() {
-        return "TaskUpdate{" +
+        return "TicketTracking{" +
                 "id=" + id +
-                ", taskId=" + taskId +
-                ", updatedBy=" + updatedBy +
+                ", ticketId=" + ticketId +
                 ", status='" + status + '\'' +
                 ", progress=" + progress +
                 ", comment='" + comment + '\'' +
-                ", createdAt=" + createdAt +
+                ", updatedBy=" + updatedBy +
+                ", updatedAt=" + updatedAt +
                 '}';
     }
 }
