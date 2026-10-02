@@ -1,5 +1,6 @@
 package com.ptms.app.service;
 
+import com.ptms.app.dao.TicketManagementDAO;
 import com.ptms.app.dao.TicketTrackingDAO;
 import com.ptms.app.model.TicketTracking;
 
@@ -10,19 +11,43 @@ public class TicketTrackingService {
     private final TicketTrackingDAO ticketTrackingDAO =
             new TicketTrackingDAO();
 
+    private final TicketManagementDAO ticketManagementDAO =
+            new TicketManagementDAO();
+
     public TicketTracking createTracking(TicketTracking tracking)
             throws SQLException {
 
         validateTracking(tracking);
 
-        return ticketTrackingDAO.create(tracking);
+        TicketTracking existing =
+                ticketTrackingDAO.findByTicketId(
+                        tracking.getTicketId());
+
+        if (existing != null) {
+
+            tracking.setId(existing.getId());
+
+            updateTracking(tracking);
+
+            return tracking;
+        }
+
+        TicketTracking result =
+                ticketTrackingDAO.create(tracking);
+
+        ticketManagementDAO.updateStatus(
+                tracking.getTicketId(),
+                tracking.getStatus());
+
+        return result;
     }
 
     public TicketTracking findTrackingByTicketId(int ticketId)
             throws SQLException {
 
         if (ticketId <= 0) {
-            throw new IllegalArgumentException("Invalid ticket ID");
+            throw new IllegalArgumentException(
+                    "Invalid ticket ID");
         }
 
         return ticketTrackingDAO.findByTicketId(ticketId);
@@ -49,7 +74,16 @@ public class TicketTrackingService {
                     "Invalid ticket tracking ID");
         }
 
-        return ticketTrackingDAO.update(tracking);
+        boolean result =
+                ticketTrackingDAO.update(tracking);
+
+        if (result) {
+            ticketManagementDAO.updateStatus(
+                    tracking.getTicketId(),
+                    tracking.getStatus());
+        }
+
+        return result;
     }
 
     private void validateTracking(TicketTracking tracking) {
@@ -70,6 +104,18 @@ public class TicketTrackingService {
                     "Ticket status is required");
         }
 
+        String status =
+                tracking.getStatus().toUpperCase();
+
+        if (!status.equals("OPEN")
+                && !status.equals("IN_PROGRESS")
+                && !status.equals("IMPLEMENTED")
+                && !status.equals("COMPLETED")) {
+
+            throw new IllegalArgumentException(
+                    "Invalid ticket status");
+        }
+
         if (tracking.getProgress() < 0 ||
                 tracking.getProgress() > 100) {
             throw new IllegalArgumentException(
@@ -79,6 +125,13 @@ public class TicketTrackingService {
         if (tracking.getUpdatedBy() <= 0) {
             throw new IllegalArgumentException(
                     "Valid updated user ID is required");
+        }
+
+        if (status.equals("COMPLETED")
+                && tracking.getProgress() != 100) {
+
+            throw new IllegalArgumentException(
+                    "Completed ticket must have 100% progress");
         }
     }
 }

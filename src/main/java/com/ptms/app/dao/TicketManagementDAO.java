@@ -3,7 +3,12 @@ package com.ptms.app.dao;
 import com.ptms.app.model.Ticket;
 import com.ptms.app.util.DBConnection;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.Date;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -15,63 +20,62 @@ public class TicketManagementDAO {
 
     private final String addTicket =
             "INSERT INTO ticket_management " +
-                    "(project_id, title, description, priority, deadline, " +
-                    "assigned_to, status) " +
+                    "(project_id, title, description, priority, deadline, assigned_to, status) " +
                     "VALUES (?, ?, ?, ?, ?, ?, ?)";
 
     private final String findTicketById =
-            "SELECT id, project_id, title, description, priority, " +
-                    "deadline, assigned_to, status, created_at " +
+            "SELECT id, project_id, title, description, priority, deadline, " +
+                    "assigned_to, status, created_at " +
                     "FROM ticket_management WHERE id = ?";
 
     private final String findAllTickets =
-            "SELECT id, project_id, title, description, priority, " +
-                    "deadline, assigned_to, status, created_at " +
+            "SELECT id, project_id, title, description, priority, deadline, " +
+                    "assigned_to, status, created_at " +
                     "FROM ticket_management";
 
     private final String findTicketsByProject =
-            "SELECT id, project_id, title, description, priority, " +
-                    "deadline, assigned_to, status, created_at " +
+            "SELECT id, project_id, title, description, priority, deadline, " +
+                    "assigned_to, status, created_at " +
                     "FROM ticket_management WHERE project_id = ?";
 
+    private final String findTicketsByAssignedUser =
+            "SELECT id, project_id, title, description, priority, deadline, " +
+                    "assigned_to, status, created_at " +
+                    "FROM ticket_management WHERE assigned_to = ?";
+
+    private final String searchTickets =
+            "SELECT id, project_id, title, description, priority, deadline, " +
+                    "assigned_to, status, created_at " +
+                    "FROM ticket_management " +
+                    "WHERE title LIKE ? OR description LIKE ?";
+
     private final String updateTicket =
-            "UPDATE ticket_management SET " +
-                    "project_id = ?, title = ?, description = ?, priority = ?, " +
-                    "deadline = ?, assigned_to = ?, status = ? " +
-                    "WHERE id = ?";
+            "UPDATE ticket_management SET project_id = ?, title = ?, " +
+                    "description = ?, priority = ?, deadline = ?, assigned_to = ?, " +
+                    "status = ? WHERE id = ?";
+
+    private final String assignTicket =
+            "UPDATE ticket_management SET assigned_to = ? WHERE id = ?";
+
+    private final String updateStatus =
+            "UPDATE ticket_management SET status = ? WHERE id = ?";
 
     private final String deleteTicket =
             "DELETE FROM ticket_management WHERE id = ?";
 
-    private final String searchTickets =
-            "SELECT id, project_id, title, description, priority, " +
-                    "deadline, assigned_to, status, created_at " +
-                    "FROM ticket_management " +
-                    "WHERE title LIKE ? OR priority LIKE ? OR status LIKE ?";
-
-
-    // CREATE
-    public Ticket create(Ticket ticket) throws SQLException {
+    public Ticket create(Ticket ticket) {
 
         try (Connection connection = DBConnection.getConnection();
              PreparedStatement statement =
                      connection.prepareStatement(
                              addTicket,
-                             Statement.RETURN_GENERATED_KEYS)) {
+                             PreparedStatement.RETURN_GENERATED_KEYS)) {
 
             statement.setInt(1, ticket.getProjectId());
             statement.setString(2, ticket.getTitle());
             statement.setString(3, ticket.getDescription());
             statement.setString(4, ticket.getPriority());
-
-            if (ticket.getDeadline() != null) {
-                statement.setDate(
-                        5,
-                        Date.valueOf(ticket.getDeadline()));
-            } else {
-                statement.setNull(5, Types.DATE);
-            }
-
+            statement.setDate(5, Date.valueOf(ticket.getDeadline()));
             statement.setInt(6, ticket.getAssignedTo());
             statement.setString(7, ticket.getStatus());
 
@@ -84,15 +88,15 @@ public class TicketManagementDAO {
                 }
             }
 
-            logger.info("Ticket added");
-        }
+            return ticket;
 
-        return ticket;
+        } catch (SQLException e) {
+            logger.severe(e.getMessage());
+            return null;
+        }
     }
 
-
-    // READ - by ID
-    public Ticket findById(int id) throws SQLException {
+    public Ticket findById(int id) {
 
         try (Connection connection = DBConnection.getConnection();
              PreparedStatement statement =
@@ -106,14 +110,15 @@ public class TicketManagementDAO {
                     return mapTicket(resultSet);
                 }
             }
+
+        } catch (SQLException e) {
+            logger.severe(e.getMessage());
         }
 
         return null;
     }
 
-
-    // READ - all
-    public List<Ticket> findAll() throws SQLException {
+    public List<Ticket> findAll() {
 
         List<Ticket> tickets = new ArrayList<>();
 
@@ -125,15 +130,15 @@ public class TicketManagementDAO {
             while (resultSet.next()) {
                 tickets.add(mapTicket(resultSet));
             }
+
+        } catch (SQLException e) {
+            logger.severe(e.getMessage());
         }
 
         return tickets;
     }
 
-
-    // READ - by project
-    public List<Ticket> findByProjectId(int projectId)
-            throws SQLException {
+    public List<Ticket> findByProjectId(int projectId) {
 
         List<Ticket> tickets = new ArrayList<>();
 
@@ -149,14 +154,66 @@ public class TicketManagementDAO {
                     tickets.add(mapTicket(resultSet));
                 }
             }
+
+        } catch (SQLException e) {
+            logger.severe(e.getMessage());
         }
 
         return tickets;
     }
 
+    public List<Ticket> findByAssignedUser(int userId) {
 
-    // UPDATE
-    public boolean update(Ticket ticket) throws SQLException {
+        List<Ticket> tickets = new ArrayList<>();
+
+        try (Connection connection = DBConnection.getConnection();
+             PreparedStatement statement =
+                     connection.prepareStatement(findTicketsByAssignedUser)) {
+
+            statement.setInt(1, userId);
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+
+                while (resultSet.next()) {
+                    tickets.add(mapTicket(resultSet));
+                }
+            }
+
+        } catch (SQLException e) {
+            logger.severe(e.getMessage());
+        }
+
+        return tickets;
+    }
+
+    public List<Ticket> search(String keyword) {
+
+        List<Ticket> tickets = new ArrayList<>();
+
+        try (Connection connection = DBConnection.getConnection();
+             PreparedStatement statement =
+                     connection.prepareStatement(searchTickets)) {
+
+            String searchValue = "%" + keyword + "%";
+
+            statement.setString(1, searchValue);
+            statement.setString(2, searchValue);
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+
+                while (resultSet.next()) {
+                    tickets.add(mapTicket(resultSet));
+                }
+            }
+
+        } catch (SQLException e) {
+            logger.severe(e.getMessage());
+        }
+
+        return tickets;
+    }
+
+    public boolean update(Ticket ticket) {
 
         try (Connection connection = DBConnection.getConnection();
              PreparedStatement statement =
@@ -166,32 +223,54 @@ public class TicketManagementDAO {
             statement.setString(2, ticket.getTitle());
             statement.setString(3, ticket.getDescription());
             statement.setString(4, ticket.getPriority());
-
-            if (ticket.getDeadline() != null) {
-                statement.setDate(
-                        5,
-                        Date.valueOf(ticket.getDeadline()));
-            } else {
-                statement.setNull(5, Types.DATE);
-            }
-
+            statement.setDate(5, Date.valueOf(ticket.getDeadline()));
             statement.setInt(6, ticket.getAssignedTo());
             statement.setString(7, ticket.getStatus());
             statement.setInt(8, ticket.getId());
 
-            int result = statement.executeUpdate();
+            return statement.executeUpdate() > 0;
 
-            if (result > 0) {
-                logger.info("Ticket updated");
-            }
-
-            return result > 0;
+        } catch (SQLException e) {
+            logger.severe(e.getMessage());
+            return false;
         }
     }
 
+    public boolean assignTicket(int ticketId, int userId) {
 
-    // DELETE
-    public boolean delete(int id) throws SQLException {
+        try (Connection connection = DBConnection.getConnection();
+             PreparedStatement statement =
+                     connection.prepareStatement(assignTicket)) {
+
+            statement.setInt(1, userId);
+            statement.setInt(2, ticketId);
+
+            return statement.executeUpdate() > 0;
+
+        } catch (SQLException e) {
+            logger.severe(e.getMessage());
+            return false;
+        }
+    }
+
+    public boolean updateStatus(int ticketId, String status) {
+
+        try (Connection connection = DBConnection.getConnection();
+             PreparedStatement statement =
+                     connection.prepareStatement(updateStatus)) {
+
+            statement.setString(1, status);
+            statement.setInt(2, ticketId);
+
+            return statement.executeUpdate() > 0;
+
+        } catch (SQLException e) {
+            logger.severe(e.getMessage());
+            return false;
+        }
+    }
+
+    public boolean delete(int id) {
 
         try (Connection connection = DBConnection.getConnection();
              PreparedStatement statement =
@@ -199,74 +278,37 @@ public class TicketManagementDAO {
 
             statement.setInt(1, id);
 
-            int result = statement.executeUpdate();
+            return statement.executeUpdate() > 0;
 
-            if (result > 0) {
-                logger.info("Ticket deleted");
-            }
-
-            return result > 0;
+        } catch (SQLException e) {
+            logger.severe(e.getMessage());
+            return false;
         }
     }
 
-
-    // SEARCH
-    public List<Ticket> searchTickets(String keyword)
-            throws SQLException {
-
-        List<Ticket> tickets = new ArrayList<>();
-
-        try (Connection connection = DBConnection.getConnection();
-             PreparedStatement statement =
-                     connection.prepareStatement(searchTickets)) {
-
-            String search = "%" + keyword + "%";
-
-            statement.setString(1, search);
-            statement.setString(2, search);
-            statement.setString(3, search);
-
-            try (ResultSet resultSet = statement.executeQuery()) {
-
-                while (resultSet.next()) {
-                    tickets.add(mapTicket(resultSet));
-                }
-            }
-        }
-
-        return tickets;
-    }
-
-
-    private Ticket mapTicket(ResultSet resultSet)
-            throws SQLException {
+    private Ticket mapTicket(ResultSet resultSet) throws SQLException {
 
         Ticket ticket = new Ticket();
 
         ticket.setId(resultSet.getInt("id"));
         ticket.setProjectId(resultSet.getInt("project_id"));
         ticket.setTitle(resultSet.getString("title"));
-        ticket.setDescription(
-                resultSet.getString("description"));
-        ticket.setPriority(
-                resultSet.getString("priority"));
+        ticket.setDescription(resultSet.getString("description"));
+        ticket.setPriority(resultSet.getString("priority"));
 
-        Date deadline =
-                resultSet.getDate("deadline");
+        Date deadline = resultSet.getDate("deadline");
 
         if (deadline != null) {
-            ticket.setDeadline(
-                    deadline.toLocalDate());
+            ticket.setDeadline(deadline.toLocalDate());
         }
 
-        ticket.setAssignedTo(
-                resultSet.getInt("assigned_to"));
+        ticket.setAssignedTo(resultSet.getInt("assigned_to"));
+        ticket.setStatus(resultSet.getString("status"));
 
-        ticket.setStatus(
-                resultSet.getString("status"));
+        Timestamp createdAt =
+                resultSet.getTimestamp("created_at");
 
-        ticket.setCreatedAt(
-                resultSet.getTimestamp("created_at"));
+        ticket.setCreatedAt(createdAt);
 
         return ticket;
     }

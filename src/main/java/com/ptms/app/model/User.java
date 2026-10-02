@@ -1,4 +1,3 @@
-
 package com.ptms.app.model;
 
 import java.time.LocalDate;
@@ -15,6 +14,7 @@ public class User {
     private LocalDate dateOfBirth;
     private String mobileNumber;
     private String gender;
+    private boolean active = true;
 
     public User() {
     }
@@ -22,7 +22,8 @@ public class User {
     public User(int id, String firstName, String lastName,
                 String username, String email, String password,
                 String roleName, LocalDate dateOfBirth,
-                String mobileNumber, String gender) {
+                String mobileNumber, String gender,
+                boolean active) {
 
         this.id = id;
         this.firstName = firstName;
@@ -34,6 +35,7 @@ public class User {
         this.dateOfBirth = dateOfBirth;
         this.mobileNumber = mobileNumber;
         this.gender = gender;
+        this.active = active;
     }
 
     public int getId() {
@@ -116,6 +118,14 @@ public class User {
         this.gender = gender;
     }
 
+    public boolean isActive() {
+        return active;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
+    }
+
     @Override
     public String toString() {
         return "User{" +
@@ -125,6 +135,10 @@ public class User {
                 ", username='" + username + '\'' +
                 ", email='" + email + '\'' +
                 ", roleName='" + roleName + '\'' +
+                ", dateOfBirth=" + dateOfBirth +
+                ", mobileNumber='" + mobileNumber + '\'' +
+                ", gender='" + gender + '\'' +
+                ", active=" + active +
                 '}';
     }
 }

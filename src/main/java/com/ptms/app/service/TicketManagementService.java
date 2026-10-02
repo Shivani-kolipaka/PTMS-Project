@@ -1,5 +1,6 @@
 package com.ptms.app.service;
 
+import com.ptms.app.dao.ProjectMemberDAO;
 import com.ptms.app.dao.TicketManagementDAO;
 import com.ptms.app.model.Ticket;
 
@@ -11,123 +12,178 @@ public class TicketManagementService {
     private final TicketManagementDAO ticketDAO =
             new TicketManagementDAO();
 
-    public Ticket createTicket(Ticket ticket) throws SQLException {
+    private final ProjectMemberDAO projectMemberDAO =
+            new ProjectMemberDAO();
 
-        if (ticket == null) {
-            throw new IllegalArgumentException("Ticket cannot be null");
-        }
+    public Ticket createTicket(Ticket ticket) {
 
-        if (ticket.getProjectId() <= 0) {
-            throw new IllegalArgumentException("Valid project ID is required");
-        }
+        validateTicket(ticket);
 
-        if (ticket.getTitle() == null ||
-                ticket.getTitle().trim().isEmpty()) {
-            throw new IllegalArgumentException("Ticket title is required");
-        }
+        if (!isProjectMember(
+                ticket.getProjectId(),
+                ticket.getAssignedTo())) {
 
-        if (ticket.getPriority() == null ||
-                ticket.getPriority().trim().isEmpty()) {
-            throw new IllegalArgumentException("Ticket priority is required");
-        }
-
-        if (ticket.getDeadline() == null) {
-            throw new IllegalArgumentException("Ticket deadline is required");
-        }
-
-        if (ticket.getAssignedTo() <= 0) {
             throw new IllegalArgumentException(
-                    "Valid assigned user ID is required");
-        }
-
-        if (ticket.getStatus() == null ||
-                ticket.getStatus().trim().isEmpty()) {
-            throw new IllegalArgumentException("Ticket status is required");
+                    "Assigned user is not a member of this project");
         }
 
         return ticketDAO.create(ticket);
     }
 
-    public Ticket findTicketById(int id) throws SQLException {
+    public Ticket findTicketById(int id) {
 
         if (id <= 0) {
-            throw new IllegalArgumentException("Invalid ticket ID");
+            throw new IllegalArgumentException("Invalid ticket id");
         }
 
         return ticketDAO.findById(id);
     }
 
-    public List<Ticket> findAllTickets() throws SQLException {
-
+    public List<Ticket> findAllTickets() {
         return ticketDAO.findAll();
     }
 
-    public List<Ticket> findTicketsByProject(int projectId)
-            throws SQLException {
+    public List<Ticket> findTicketsByProject(int projectId) {
 
         if (projectId <= 0) {
-            throw new IllegalArgumentException("Invalid project ID");
+            throw new IllegalArgumentException("Invalid project id");
         }
 
         return ticketDAO.findByProjectId(projectId);
     }
 
-    public boolean updateTicket(Ticket ticket) throws SQLException {
+    public List<Ticket> findTicketsByAssignedUser(int userId) {
 
-        if (ticket == null) {
-            throw new IllegalArgumentException("Ticket cannot be null");
+        if (userId <= 0) {
+            throw new IllegalArgumentException("Invalid user id");
         }
 
-        if (ticket.getId() <= 0) {
-            throw new IllegalArgumentException("Invalid ticket ID");
-        }
+        return ticketDAO.findByAssignedUser(userId);
+    }
 
-        if (ticket.getProjectId() <= 0) {
-            throw new IllegalArgumentException("Valid project ID is required");
-        }
+    public List<Ticket> searchTickets(String keyword) {
 
-        if (ticket.getTitle() == null ||
-                ticket.getTitle().trim().isEmpty()) {
-            throw new IllegalArgumentException("Ticket title is required");
-        }
-
-        if (ticket.getPriority() == null ||
-                ticket.getPriority().trim().isEmpty()) {
-            throw new IllegalArgumentException("Ticket priority is required");
-        }
-
-        if (ticket.getDeadline() == null) {
-            throw new IllegalArgumentException("Ticket deadline is required");
-        }
-
-        if (ticket.getAssignedTo() <= 0) {
+        if (keyword == null || keyword.trim().isEmpty()) {
             throw new IllegalArgumentException(
-                    "Valid assigned user ID is required");
+                    "Search keyword cannot be empty");
         }
 
-        if (ticket.getStatus() == null ||
-                ticket.getStatus().trim().isEmpty()) {
-            throw new IllegalArgumentException("Ticket status is required");
+        return ticketDAO.search(keyword);
+    }
+
+    public boolean updateTicket(Ticket ticket) {
+
+        validateTicket(ticket);
+
+        if (!isProjectMember(
+                ticket.getProjectId(),
+                ticket.getAssignedTo())) {
+
+            throw new IllegalArgumentException(
+                    "Assigned user is not a member of this project");
         }
 
         return ticketDAO.update(ticket);
     }
 
-    public boolean deleteTicket(int id) throws SQLException {
+    public boolean assignTicket(int ticketId, int userId) {
+
+        if (ticketId <= 0) {
+            throw new IllegalArgumentException("Invalid ticket id");
+        }
+
+        if (userId <= 0) {
+            throw new IllegalArgumentException("Invalid user id");
+        }
+
+        Ticket ticket = ticketDAO.findById(ticketId);
+
+        if (ticket == null) {
+            throw new IllegalArgumentException("Ticket not found");
+        }
+
+        if (!isProjectMember(
+                ticket.getProjectId(),
+                userId)) {
+
+            throw new IllegalArgumentException(
+                    "User is not a member of this project");
+        }
+
+        return ticketDAO.assignTicket(ticketId, userId);
+    }
+
+    public boolean deleteTicket(int id) {
 
         if (id <= 0) {
-            throw new IllegalArgumentException("Invalid ticket ID");
+            throw new IllegalArgumentException("Invalid ticket id");
         }
 
         return ticketDAO.delete(id);
     }
 
-    public List<Ticket> searchTickets(String keyword) throws SQLException {
+    private boolean isProjectMember(int projectId, int userId) {
 
-        if (keyword == null || keyword.trim().isEmpty()) {
-            throw new IllegalArgumentException("Search keyword is required");
+        try {
+
+            return projectMemberDAO.isMember(
+                    projectId,
+                    userId);
+
+        } catch (SQLException e) {
+
+            throw new IllegalArgumentException(
+                    "Unable to check project member");
+        }
+    }
+
+    private void validateTicket(Ticket ticket) {
+
+        if (ticket == null) {
+            throw new IllegalArgumentException(
+                    "Ticket cannot be null");
         }
 
-        return ticketDAO.searchTickets(keyword);
+        if (ticket.getProjectId() <= 0) {
+            throw new IllegalArgumentException(
+                    "Invalid project id");
+        }
+
+        if (ticket.getTitle() == null ||
+                ticket.getTitle().trim().isEmpty()) {
+
+            throw new IllegalArgumentException(
+                    "Ticket title cannot be empty");
+        }
+
+        if (ticket.getPriority() == null ||
+                ticket.getPriority().trim().isEmpty()) {
+
+            throw new IllegalArgumentException(
+                    "Ticket priority cannot be empty");
+        }
+
+        if (ticket.getDeadline() == null) {
+            throw new IllegalArgumentException(
+                    "Ticket deadline cannot be empty");
+        }
+
+        if (ticket.getAssignedTo() <= 0) {
+            throw new IllegalArgumentException(
+                    "Invalid assigned user id");
+        }
+
+        if (!isValidStatus(ticket.getStatus())) {
+            throw new IllegalArgumentException(
+                    "Invalid ticket status");
+        }
+    }
+
+    private boolean isValidStatus(String status) {
+
+        return "OPEN".equals(status)
+                || "IN_PROGRESS".equals(status)
+                || "IMPLEMENTED".equals(status)
+                || "COMPLETED".equals(status);
     }
 }

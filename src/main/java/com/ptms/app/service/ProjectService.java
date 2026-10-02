@@ -41,7 +41,8 @@ public class ProjectService {
                     "Deadline cannot be before start date");
         }
 
-        return projectDAO.create(project);
+        projectDAO.create(project);
+        return project;
     }
 
     public Project findProjectById(int id) throws SQLException {
@@ -93,7 +94,8 @@ public class ProjectService {
                     "Deadline cannot be before start date");
         }
 
-        return projectDAO.update(project);
+        projectDAO.update(project);
+        return true;
     }
 
     public boolean deleteProject(int id) throws SQLException {
@@ -102,7 +104,8 @@ public class ProjectService {
             throw new IllegalArgumentException("Invalid project ID");
         }
 
-        return projectDAO.delete(id);
+        projectDAO.delete(id);
+        return true;
     }
 
     public List<Project> searchProjects(String keyword) throws SQLException {
@@ -111,6 +114,16 @@ public class ProjectService {
             throw new IllegalArgumentException("Search keyword is required");
         }
 
-        return projectDAO.searchProjects(keyword);
+        return projectDAO.search(keyword);
+    }
+
+    public List<Project> findProjectsByMember(int userId)
+            throws SQLException {
+
+        if (userId <= 0) {
+            throw new IllegalArgumentException("Invalid user ID");
+        }
+
+        return projectDAO.findProjectsByMember(userId);
     }
 }

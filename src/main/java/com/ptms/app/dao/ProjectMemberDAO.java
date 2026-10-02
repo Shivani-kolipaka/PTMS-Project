@@ -3,7 +3,10 @@ package com.ptms.app.dao;
 import com.ptms.app.model.ProjectMember;
 import com.ptms.app.util.DBConnection;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -14,18 +17,23 @@ public class ProjectMemberDAO {
             Logger.getLogger(ProjectMemberDAO.class.getName());
 
     private final String addProjectMember =
-            "INSERT INTO project_members (project_id, user_id, project_role) VALUES (?, ?, ?)";
+            "INSERT INTO project_members " +
+                    "(project_id, user_id, project_role) VALUES (?, ?, ?)";
 
     private final String findProjectMembers =
             "SELECT project_id, user_id, project_role, joined_at " +
                     "FROM project_members WHERE project_id = ?";
 
+    private final String checkProjectMember =
+            "SELECT COUNT(*) FROM project_members " +
+                    "WHERE project_id = ? AND user_id = ?";
+
     private final String deleteProjectMember =
-            "DELETE FROM project_members WHERE project_id = ? AND user_id = ?";
+            "DELETE FROM project_members " +
+                    "WHERE project_id = ? AND user_id = ?";
 
-
-    // CREATE
-    public ProjectMember create(ProjectMember member) throws SQLException {
+    public ProjectMember create(ProjectMember member)
+            throws SQLException {
 
         try (Connection connection = DBConnection.getConnection();
              PreparedStatement statement =
@@ -43,8 +51,6 @@ public class ProjectMemberDAO {
         return member;
     }
 
-
-    // READ - project members
     public List<ProjectMember> findByProjectId(int projectId)
             throws SQLException {
 
@@ -82,8 +88,38 @@ public class ProjectMemberDAO {
         return members;
     }
 
+    public boolean isMember(int projectId, int userId)
+            throws SQLException {
 
-    // DELETE
+        try (Connection connection = DBConnection.getConnection();
+             PreparedStatement statement =
+                     connection.prepareStatement(checkProjectMember)) {
+
+            statement.setInt(1, projectId);
+            statement.setInt(2, userId);
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+
+                if (resultSet.next()) {
+
+                    int count = resultSet.getInt(1);
+
+                    logger.info(
+                            "Project member check: projectId="
+                                    + projectId
+                                    + ", userId="
+                                    + userId
+                                    + ", count="
+                                    + count);
+
+                    return count > 0;
+                }
+            }
+        }
+
+        return false;
+    }
+
     public boolean delete(int projectId, int userId)
             throws SQLException {
 
